@@ -1,7 +1,5 @@
 project("RaycastDDATest")
 
-enable_testing()
-
 # executable with 8kb required
 
 add_executable(Test8KB "test_8kb.c")
@@ -40,4 +38,6 @@ add_test(NAME TestScenariosLodev COMMAND TestScenariosLodev)
 add_executable(TestComparison "test_comparison.cpp")
 
 add_test(NAME TestComparison COMMAND TestComparison)
-
+set_tests_properties(TestComparison PROPERTIES
+    DEPENDS "TestScenarios;TestScenariosLodev"
+)
