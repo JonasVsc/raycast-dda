@@ -92,13 +92,13 @@ static int MAP_INPUT[MAP_SIZE] = {
 };
 
 static float ORIGIN_X_INPUT = 2.5f;
-static float ORIGIN_Y_INPUT = 4.5f;
+static float ORIGIN_Y_INPUT = 2.5f;
 
 static float ORIGIN_DIR_X_INPUT = 1.0f;
 static float ORIGIN_DIR_Y_INPUT = 0.0f;
 
 static float PLANE_X_INPUT = 0.0f;
-static float PLANE_Y_INPUT = 1.2f;
+static float PLANE_Y_INPUT = 0.66f;
 
 
 int main(int argc, char* argv[])
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 
     // Output
 
-    for (int x = 0; x < RAY_COUNT_OUTPUT; x += 10)
+    for (int x = 0; x < RAY_COUNT_OUTPUT; x += 2)
     {
         printf("Raio %d: Distancia = %.2f\n", x, ray_distances_ouput[x]);
     }

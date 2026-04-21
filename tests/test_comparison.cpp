@@ -30,7 +30,7 @@ void comparar_arquivos(const char* nome_res, const char* nome_ref)
 
         if (vetor1[i] != vetor2[i]) 
         {
-            printf("  Indice [%d]: %.4f != %.4f\n", i, vetor1[i], vetor2[i]);
+            printf("  Indice [%d]: %.6f != %.6f\n", i, vetor1[i], vetor2[i]);
             divergencias++;
         }
     }
@@ -50,11 +50,11 @@ void comparar_arquivos(const char* nome_res, const char* nome_ref)
 
 int main() 
 {
-    int n = 3;
+    int n = 13;
     char nome_res[255];
     char nome_ref[255];
 
-    for (int i = 1; i <= 3; i++) 
+    for (int i = 1; i <= n; i++)
     {
         sprintf(nome_res, "res_scenario_%d.txt", i);
         sprintf(nome_ref, "ref_scenario_%d.txt", i);
