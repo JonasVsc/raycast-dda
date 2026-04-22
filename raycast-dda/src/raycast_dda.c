@@ -20,9 +20,11 @@ void raycast_dda(
 {
     for (int x = 0; x < ray_count; x++) 
     {
-        float camera_x = 2.0f * x / (float)ray_count - 1.0f;
-        float ray_dir_x = dir_x + plane_x * camera_x;
-        float ray_dir_y = dir_y + plane_y * camera_x;
+        float camera_x_normalized = 2.0f * x / (float)ray_count - 1.0f;
+        float plane_length_x = plane_x * camera_x_normalized;
+        float plane_length_y = plane_y * camera_x_normalized;
+        float ray_dir_x = dir_x + plane_length_x;
+        float ray_dir_y = dir_y + plane_length_y;
 
         int map_x = (int)origin_x;
         int map_y = (int)origin_y;
@@ -39,23 +41,27 @@ void raycast_dda(
         if (ray_dir_x < 0) 
         {
             step_x = -1;
-            side_dist_x = (origin_x - map_x) * delta_dist_x;
+            float dist_top_edge = origin_x - map_x;
+            side_dist_x = dist_top_edge * delta_dist_x;
         }
         else 
         {
             step_x = 1;
-            side_dist_x = (map_x + 1.0f - origin_x) * delta_dist_x;
+            float dist_bottom_edge = map_x + 1.0f - origin_x;
+            side_dist_x = dist_bottom_edge * delta_dist_x;
         }
 
         if (ray_dir_y < 0) 
         {
             step_y = -1;
-            side_dist_y = (origin_y - map_y) * delta_dist_y;
+            float dist_left_edge = origin_y - map_y;
+            side_dist_y = dist_left_edge * delta_dist_y;
         }
         else
         {
             step_y = 1;
-            side_dist_y = (map_y + 1.0f - origin_y) * delta_dist_y;
+            float dist_right_edge = map_y + 1.0f - origin_y;
+            side_dist_y = dist_right_edge * delta_dist_y;
         }
 
         while (hit == 0) 
@@ -90,11 +96,11 @@ void raycast_dda(
         { 
             if (side == 0) 
             {
-                out_distances[x] = (side_dist_x - delta_dist_x);
+                out_distances[x] = side_dist_x - delta_dist_x;
             }
             else 
             {
-                out_distances[x] = (side_dist_y - delta_dist_y);
+                out_distances[x] = side_dist_y - delta_dist_y;
             }
         }
     }
