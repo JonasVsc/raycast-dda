@@ -50,7 +50,7 @@ void comparar_arquivos(const char* nome_res, const char* nome_ref)
 
 int main() 
 {
-    int n = 13;
+    int n = 16;
     char nome_res[255];
     char nome_ref[255];
 
