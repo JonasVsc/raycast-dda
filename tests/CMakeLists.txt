@@ -1,23 +1,25 @@
 project("RaycastDDATest")
 
-# executable with 8kb required
+# executable with 8kb required also output image
 
 add_executable(Test8KB "test_8kb.c")
 
 target_link_libraries(Test8KB
 	PRIVATE 
 		RaycastDDA::RaycastDDA
+		RaycastDDAVisualizer::RaycastDDAVisualizer
 )
 
 add_test(NAME Test8KB COMMAND Test8KB)
 
-# executable with scenarios test
+# executable with scenarios test also output scenarios images
 
 add_executable(TestScenarios "test_scenarios.c")
 
 target_link_libraries(TestScenarios
 	PRIVATE 
 		RaycastDDA::RaycastDDA
+		RaycastDDAVisualizer::RaycastDDAVisualizer
 )
 
 add_test(NAME TestScenarios COMMAND TestScenarios)

@@ -1,6 +1,4 @@
 #include <raycast_dda.h>
-#include <assert.h>
-#include <stdio.h>
 
 #define MAP_WIDTH 80
 #define MAP_HEIGHT 80
@@ -100,23 +98,15 @@ static float ORIGIN_DIR_Y_INPUT = 0.0f;
 static float PLANE_X_INPUT = 0.0f;
 static float PLANE_Y_INPUT = 0.66f;
 
+static float RAY_DISTANCES_OUTPUT[RAY_COUNT_OUTPUT] = { 0.0f };
 
 int main(int argc, char* argv[])
 {
-    float ray_distances_ouput[RAY_COUNT_OUTPUT] = { 0.0f };
-
     raycast_dda(
         MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
         ORIGIN_X_INPUT, ORIGIN_Y_INPUT, ORIGIN_DIR_X_INPUT, ORIGIN_DIR_Y_INPUT,
         PLANE_X_INPUT, PLANE_Y_INPUT,
-        RAY_COUNT_OUTPUT, ray_distances_ouput);
-
-    // Output
-
-    for (int x = 0; x < RAY_COUNT_OUTPUT; x += 2)
-    {
-        printf("Raio %d: Distancia = %.2f\n", x, ray_distances_ouput[x]);
-    }
+        RAY_COUNT_OUTPUT, RAY_DISTANCES_OUTPUT);
 
     return 0;
 }

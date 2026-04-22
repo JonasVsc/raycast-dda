@@ -6,16 +6,16 @@ void raycast_dda(
     int map_width,
     int map_height,
 
-    float origin_x, // posição inicial camera
-    float origin_y, // posição inicial camera
+    float origin_x, 
+    float origin_y, 
 
-    float dir_x,    // direção X para onde a câmera olha
-    float dir_y,    // direção Y para onde a câmera olha
-    float plane_x,  // plano X da câmera (FOV)
-    float plane_y,  // plano Y da câmera (FOV)
+    float dir_x,  
+    float dir_y,  
+    float plane_x,
+    float plane_y,
 
-    int ray_count,  // quantidade de raios (ex: largura da tela)
-    float* out_distances // array de saída com as distâncias calculadas
+    int ray_count, 
+    float* out_distances
 );
 
 

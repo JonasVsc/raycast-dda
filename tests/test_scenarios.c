@@ -1,7 +1,8 @@
+#include <raycast_dda_visualizer.h>
+#include <raycast_dda.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "raycast_dda.h"
 
 #define MAP_WIDTH 80
 #define MAP_HEIGHT 80
@@ -150,6 +151,14 @@ int main(int argc, char* argv[])
         {
             printf("Erro ao criar o arquivo '%s'.\n", filename);
         }
+
+        sprintf(filename, "res_%s.ppm", testes[i].nome_teste);
+        save_raycast_visualization(
+            MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
+            testes[i].ORIGIN_X_INPUT, testes[i].ORIGIN_Y_INPUT,
+            testes[i].ORIGIN_DIR_X_INPUT, testes[i].ORIGIN_DIR_Y_INPUT,
+            testes[i].PLANE_X_INPUT, testes[i].PLANE_Y_INPUT,
+            RAY_COUNT_OUTPUT, ray_distances_ouput, filename);
     }
 
     return 0;

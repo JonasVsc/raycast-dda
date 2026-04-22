@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project("RaycastDDA"
+project("RaycastDDAAlgorithm"
         VERSION 0.1
         DESCRIPTION "Raycast using DDA"
         LANGUAGES C)
@@ -8,4 +8,5 @@ project("RaycastDDA"
 enable_testing()
 
 add_subdirectory(raycast-dda)
+add_subdirectory(raycast-dda-visualizer)
 add_subdirectory(tests)
