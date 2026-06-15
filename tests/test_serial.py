@@ -1,21 +1,12 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <cmath>
-#include <string>
-#include <iomanip>
-#include <chrono>
+import struct
+import serial
+import time
 
-#define PROFILING 1
-#define EXEC_AMOUNT 1000
-
-#define mapWidth 80
-#define mapHeight 80
+MAP_WIDTH  = 80
+MAP_HEIGHT = 80
 
 
-const int screenWidth = 400;
-
-int worldMap[mapWidth][mapHeight] = {
+MAP_INPUT = [
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -96,155 +87,113 @@ int worldMap[mapWidth][mapHeight] = {
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-};
+]
 
-struct TestConfig 
-{
-    std::string id;
-    float posX, posY;
-    float dirX, dirY;
-    float planeX, planeY;
-};
 
-int main() {
 
-    std::vector<TestConfig> testes = {
-        {"scenario_1", 2.5f, 2.5f, 1.0f, 0.0f, 0.0f, 0.66f},
-        {"scenario_2", 18.5f, 23.4f, 0.0f, 1.0f, 0.66f, 0.0f},
-        {"scenario_3", 18.5f, 23.4f, -1.0f, 0.0f, 0.0f, -0.66f},
-        {"scenario_4", 18.5f, 23.4f, 0.0f, -1.0f, -0.66f, 0.0f},
-        {"scenario_5", 15.2f, 31.8f, 1.0f, 0.0f, 0.0f, 1.0f},
-        {"scenario_6", 12.6f, 7.8f, 0.0f, 1.0f, 0.8f, 0.0f},
-        {"scenario_7", 28.4f, 6.4f, -1.0f, 0.0f, 0.0f, -0.8f},
-        {"scenario_8", 2.6f, 9.2f, 0.0f, -1.0f, -1.0f, 0.0f},
-        {"scenario_9", 2.5f, 2.5f, 0.866f, 0.5f, -0.33f, 0.5716f},
-        {"scenario_10", 4.0f, 4.0f, 0.7071f, 0.7071f, -0.4667f, 0.4667f},
-        {"scenario_11", 1.5f, 6.5f, 0.5f, 0.866f, -0.5716f, 0.33f},
-        {"scenario_12", 1.5f, 6.5f, -0.7071f, 0.7071f, -0.4667f, -0.4667f},
-        {"scenario_13", 6.5f, 16.5f, -0.7071f, -0.7071f, 0.4667f, -0.4667f},
-        {"scenario_14", 40.0f, 40.0f, 0.0f, 1.0f, 0.66f, 0.0f},
-        {"scenario_15", 40.0f, 40.0f, 0.0f, -1.0f, 0.66f, 0.0f},
-        {"scenario_16", 35.8f, 27.2f, 0.7071f, 0.7071f, -0.4667f, 0.4667f}
-    };
 
-    int scenario_counter{ 0 };
-    std::vector<double> scenarios_runtime(testes.size());
+TOTAL_RAY_COUNT = 400
+RAYS_PER_CHUNK  = 400
 
-    for (const auto& config : testes) 
-    {
-        std::vector<float> dists(screenWidth);
+TEST_SCENARIOS = [
+    ("scenario_1", 2.5, 2.5, 1.0, 0.0, 0.0, 0.66),
+    ("scenario_2", 18.5, 23.4, 0.0, 1.0, 0.66, 0.0),
+    ("scenario_3", 18.5, 23.4, -1.0, 0.0, 0.0, -0.66),
+    ("scenario_4", 18.5, 23.4, 0.0, -1.0, -0.66, 0.0),
+    ("scenario_5", 15.2, 31.8, 1.0, 0.0, 0.0, 1.0),
+    ("scenario_6", 12.6, 7.8, 0.0, 1.0, 0.8, 0.0),
+    ("scenario_7", 28.4, 6.4, -1.0, 0.0, 0.0, -0.8),
+    ("scenario_8", 2.6, 9.2, 0.0, -1.0, -1.0, 0.0),
+    ("scenario_9", 2.5, 2.5, 0.866, 0.5, -0.33, 0.5716),
+    ("scenario_10", 4.0, 4.0, 0.7071, 0.7071, -0.4667, 0.4667),
+    ("scenario_11", 1.5, 6.5, 0.5, 0.866, -0.5716, 0.33),
+    ("scenario_12", 1.5, 6.5, -0.7071, 0.7071, -0.4667, -0.4667),
+    ("scenario_13", 6.5, 16.5, -0.7071, -0.7071, 0.4667, -0.4667),
+    ("scenario_14", 40.0, 40.0, 0.0, 1.0, 0.66, 0.0),
+    ("scenario_15", 40.0, 40.0, 0.0, -1.0, 0.66, 0.0),
+    ("scenario_16", 7, 8, 0.7071, 0.7071, -0.4667, 0.4667)
+]
 
-        auto begin_runtime = std::chrono::high_resolution_clock::now();
+def bitpack_map(map_data, width, height):
+    total  = width * height
+    packed = bytearray((total + 7) // 8)
+    for i, val in enumerate(map_data):
+        if val:
+            packed[i >> 3] |= (1 << (i & 7))
+    return bytes(packed)
 
-        for (int iter = 0; iter < EXEC_AMOUNT; ++iter)
-        {
-            float posX = config.posX, posY = config.posY;
-            float dirX = config.dirX, dirY = config.dirY;
-            float planeX = config.planeX, planeY = config.planeY;
 
-        for (int x = 0; x < screenWidth; x++) 
-        {
-            float cameraX = 2 * x / (float)screenWidth - 1;
-            float rayDirX = dirX + planeX * cameraX;
-            float rayDirY = dirY + planeY * cameraX;
 
-            int mapX = int(posX);
-            int mapY = int(posY);
 
-            float sideDistX, sideDistY;
+packed_map = bitpack_map(MAP_INPUT, MAP_WIDTH, MAP_HEIGHT)
+map_bytes  = len(packed_map)
 
-            float deltaDistX = (rayDirX == 0) ? 1e30 : std::abs(1 / rayDirX);
-            float deltaDistY = (rayDirY == 0) ? 1e30 : std::abs(1 / rayDirY);
-            float perpWallDist;
+FORMATO = f'<{map_bytes}sBBffffffHH'
 
-            int stepX, stepY;
-            int hit = 0;
-            int side;
+num_chunks = TOTAL_RAY_COUNT // RAYS_PER_CHUNK
 
-            if (rayDirX < 0) 
-            {
-                stepX = -1;
-                sideDistX = (posX - mapX) * deltaDistX;
-            }
-            else 
-            {
-                stepX = 1;
-                sideDistX = (mapX + 1.0f - posX) * deltaDistX;
-            }
-            if (rayDirY < 0) 
-            {
-                stepY = -1;
-                sideDistY = (posY - mapY) * deltaDistY;
-            }
-            else 
-            {
-                stepY = 1;
-                sideDistY = (posY - mapY) * deltaDistY;
-            }
+print(f"Mapa bit-packed           : {map_bytes} bytes  (era {MAP_WIDTH * MAP_HEIGHT} bytes)")
+print(f"Total de raios            : {TOTAL_RAY_COUNT}")
+print(f"Raios por chunk           : {RAYS_PER_CHUNK}")
+print(f"Número de chunks          : {num_chunks}")
+print(f"Cenários a executar       : {len(TEST_SCENARIOS)}\n")
 
-            if (rayDirY < 0) 
-            {
-                stepY = -1;
-                sideDistY = (posY - mapY) * deltaDistY;
-            }
-            else 
-            {
-                stepY = 1;
-                sideDistY = (mapY + 1.0f - posY) * deltaDistY;
-            }
+ser = serial.Serial(
+    port='COM6',
+    baudrate=38400,
+    timeout=10,
+)
 
-            while (hit == 0) 
-            {
-                if (sideDistX < sideDistY) 
-                {
-                    sideDistX += deltaDistX;
-                    mapX += stepX;
-                    side = 0;
-                }
-                else 
-                {
-                    sideDistY += deltaDistY;
-                    mapY += stepY;
-                    side = 1;
-                }
+time.sleep(2)
 
-                if (worldMap[mapX][mapY] > 0) hit = 1;
-            }
+for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, start=1):
 
-            if (side == 0) perpWallDist = (sideDistX - deltaDistX);
-            else           perpWallDist = (sideDistY - deltaDistY);
+    print(f"{'='*60}")
+    print(f"Cenário {scenario_idx}/{len(TEST_SCENARIOS)}: {name}")
+    print(f"  origin=({ox}, {oy})  dir=({dx}, {dy})  plane=({px}, {py})")
 
-            dists[x] = perpWallDist;
-        }
-        }
+    buffer = struct.pack(
+        FORMATO,
+        packed_map,
+        MAP_WIDTH,
+        MAP_HEIGHT,
+        ox, oy, dx, dy, px, py,
+        TOTAL_RAY_COUNT,
+        RAYS_PER_CHUNK,
+    )
 
-        auto end_runtime = std::chrono::high_resolution_clock::now();
-        scenarios_runtime[scenario_counter] = std::chrono::duration_cast<std::chrono::nanoseconds>(end_runtime - begin_runtime).count() / (1000.0 * EXEC_AMOUNT);
+    print(f"  Tamanho do pacote: {len(buffer)} bytes")
 
-        scenario_counter++;
+    ser.reset_input_buffer()
+    ser.write(buffer)
+    print("  Pacote enviado. Aguardando respostas...\n")
 
-        std::string nomeArquivo = "ref_" + config.id + ".txt";
-        std::ofstream arquivoSaida(nomeArquivo);
+    all_distances = []
+    error_occurred = False
 
-        if (arquivoSaida.is_open()) 
-        {
-            arquivoSaida << std::fixed << std::setprecision(6);
-            for (float valor : dists) 
-            {
-                arquivoSaida << valor << std::endl;
-            }
+    for chunk_idx in range(num_chunks):
+        rays_in_chunk = min(RAYS_PER_CHUNK, TOTAL_RAY_COUNT - chunk_idx * RAYS_PER_CHUNK)
+        raw = ser.read(rays_in_chunk * 4)
 
-            arquivoSaida.close();
-            // std::cout << "Sucesso: " << nomeArquivo << " gerado." << std::endl;
-        }
-    }
+        distances = struct.unpack(f'<{rays_in_chunk}f', raw)
+        all_distances.extend(distances)
 
-    // Raycast Scenarios compute time
+        formatted = " ".join(f"{d:.6f}" for d in distances)
+        print(f"  Chunk {chunk_idx + 1:02d}/{num_chunks}: [{formatted}]")
 
-    for (int i = 0; i < scenarios_runtime.size(); i++)
-    {
-        std::cout << "scenario [" << i << "] " << scenarios_runtime[i] << " us\n";
-    }
+    print(f"\n  Total de distâncias recebidas: {len(all_distances)}")
 
-    return 0;
-}
+    if not error_occurred:
+        output_file = f"out/build/x64-Debug/tests/res_output_{scenario_idx}.txt"
+        with open(output_file, "w") as f:
+            f.write("\n".join(f"{d:.6f}" for d in all_distances) + "\n")
+        print(f"  Resultados salvos em {output_file}\n")
+    else:
+        print(f"  [AVISO] Cenário {scenario_idx} incompleto — arquivo não salvo.\n")
+
+
+print("="*60)
+print("Todos os cenários concluídos.")
+
+ser.close()
+

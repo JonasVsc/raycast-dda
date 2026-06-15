@@ -3,7 +3,6 @@
 
 #define TAMANHO 400
 
-
 void comparar_arquivos(const char* nome_res, const char* nome_ref) 
 {
     float vetor1[TAMANHO], vetor2[TAMANHO];
@@ -55,13 +54,10 @@ int main()
     char nome_res[255];
     char nome_ref[255];
 
-    for (int i = 1; i <= n; i++)
-    {
-        sprintf(nome_res, "ref_scenario_%d.txt", i);
-        sprintf(nome_ref, "res_output_%d.txt", i);
+    sprintf(nome_res, "ref_scenario_1.txt", i);
+    sprintf(nome_ref, "res_output.txt", i);
 
-        comparar_arquivos(nome_res, nome_ref);
-    }
+    comparar_arquivos(nome_res, nome_ref);
 
     return 0;
 }

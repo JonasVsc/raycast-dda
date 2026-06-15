@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
+
+#define EXEC_AMOUNT 1000
 
 #define MAP_WIDTH 80
 #define MAP_HEIGHT 80
@@ -127,14 +130,28 @@ int main(int argc, char* argv[])
 
     int num_testes = sizeof(testes) / sizeof(testes[0]);
 
+    double scenarios_runtime[100] = {0};
+
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+
     for (int i = 0; i < num_testes; i++) 
     {
-        raycast_dda(
-            MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
-            testes[i].ORIGIN_X_INPUT, testes[i].ORIGIN_Y_INPUT,
-            testes[i].ORIGIN_DIR_X_INPUT, testes[i].ORIGIN_DIR_Y_INPUT,
-            testes[i].PLANE_X_INPUT, testes[i].PLANE_Y_INPUT,
-            RAY_COUNT_OUTPUT, ray_distances_ouput);
+        LARGE_INTEGER start, end;
+        QueryPerformanceCounter(&start);
+
+        for (int iter = 0; iter < EXEC_AMOUNT; iter++)
+        {
+            raycast_dda(
+                MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
+                testes[i].ORIGIN_X_INPUT, testes[i].ORIGIN_Y_INPUT,
+                testes[i].ORIGIN_DIR_X_INPUT, testes[i].ORIGIN_DIR_Y_INPUT,
+                testes[i].PLANE_X_INPUT, testes[i].PLANE_Y_INPUT,
+                RAY_COUNT_OUTPUT, ray_distances_ouput);
+        }
+
+        QueryPerformanceCounter(&end);
+        scenarios_runtime[i] = (double)(end.QuadPart - start.QuadPart) * 1000000.0 / frequency.QuadPart / EXEC_AMOUNT;
 
         char filename[100] = { 0 };
         sprintf(filename, "res_%s.txt", testes[i].nome_teste);
@@ -148,11 +165,7 @@ int main(int argc, char* argv[])
             }
 
             fclose(arquivo);
-            printf("Arquivo '%s' gerado com sucesso.\n", filename);
-        }
-        else 
-        {
-            printf("Erro ao criar o arquivo '%s'.\n", filename);
+            // printf("Arquivo '%s' gerado com sucesso.\n", filename);
         }
 
         sprintf(filename, "res_%s.ppm", testes[i].nome_teste);
@@ -162,6 +175,11 @@ int main(int argc, char* argv[])
             testes[i].ORIGIN_DIR_X_INPUT, testes[i].ORIGIN_DIR_Y_INPUT,
             testes[i].PLANE_X_INPUT, testes[i].PLANE_Y_INPUT,
             RAY_COUNT_OUTPUT, ray_distances_ouput, filename);
+    }
+
+    for (int i = 0; i < num_testes; i++)
+    {
+        printf("scenario [%d] %f us\n", i, scenarios_runtime[i]);
     }
 
     return 0;

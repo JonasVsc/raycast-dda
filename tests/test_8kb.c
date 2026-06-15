@@ -1,10 +1,12 @@
 #include <raycast_dda.h>
+#include <stdint.h>
 
 #define MAP_WIDTH 80
 #define MAP_HEIGHT 80
 #define MAP_SIZE (MAP_WIDTH * MAP_HEIGHT)
 
 #define RAY_COUNT_OUTPUT 400
+
 
 static int MAP_INPUT[MAP_SIZE] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
