@@ -141,7 +141,7 @@ print(f"Cenários a executar       : {len(TEST_SCENARIOS)}\n")
 ser = serial.Serial(
     port='COM6',
     baudrate=38400,
-    timeout=10,
+    timeout=300,
 )
 
 time.sleep(2)
@@ -173,7 +173,13 @@ for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, st
 
     for chunk_idx in range(num_chunks):
         rays_in_chunk = min(RAYS_PER_CHUNK, TOTAL_RAY_COUNT - chunk_idx * RAYS_PER_CHUNK)
-        raw = ser.read(rays_in_chunk * 4)
+        expected_bytes = rays_in_chunk * 4
+        raw = ser.read(expected_bytes)
+
+        if len(raw) != expected_bytes:
+            print(f"  [ERRO] Tempo limite na leitura serial! Esperava {expected_bytes} bytes, mas recebeu apenas {len(raw)} bytes.")
+            error_occurred = True
+            break
 
         distances = struct.unpack(f'<{rays_in_chunk}f', raw)
         all_distances.extend(distances)

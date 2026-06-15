@@ -1,19 +1,12 @@
-#include <raycast_dda_visualizer.h>
-#include <raycast_dda.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <windows.h>
+import struct
+import serial
+import time
 
-#define EXEC_AMOUNT 50
+MAP_WIDTH  = 80
+MAP_HEIGHT = 80
 
-#define MAP_WIDTH 80
-#define MAP_HEIGHT 80
-#define MAP_SIZE (MAP_WIDTH * MAP_HEIGHT)
 
-#define RAY_COUNT_OUTPUT 400
-
-static int MAP_INPUT[MAP_SIZE] = {
+MAP_INPUT = [
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -60,12 +53,7 @@ static int MAP_INPUT[MAP_SIZE] = {
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
@@ -94,93 +82,126 @@ static int MAP_INPUT[MAP_SIZE] = {
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-};
+]
 
-typedef struct TestScenario
-{
-    const char* nome_teste;
-    float ORIGIN_X_INPUT, ORIGIN_Y_INPUT;
-    float ORIGIN_DIR_X_INPUT, ORIGIN_DIR_Y_INPUT;
-    float PLANE_X_INPUT, PLANE_Y_INPUT;
 
-} TestScenario;
 
-int main(int argc, char* argv[])
-{
-    float ray_distances_ouput[RAY_COUNT_OUTPUT];
 
-    TestScenario testes[] = {
-        {"scenario_1", 2.5f, 2.5f, 1.0f, 0.0f, 0.0f, 0.66f},
-        {"scenario_2", 18.5f, 23.4f, 0.0f, 1.0f, 0.66f, 0.0f},
-        {"scenario_3", 18.5f, 23.4f, -1.0f, 0.0f, 0.0f, -0.66f},
-        {"scenario_4", 18.5f, 23.4f, 0.0f, -1.0f, -0.66f, 0.0f},
-        {"scenario_5", 15.2f, 31.8f, 1.0f, 0.0f, 0.0f, 1.0f},
-        {"scenario_6", 12.6f, 7.8f, 0.0f, 1.0f, 0.8f, 0.0f},
-        {"scenario_7", 28.4f, 6.4f, -1.0f, 0.0f, 0.0f, -0.8f},
-        {"scenario_8", 2.6f, 9.2f, 0.0f, -1.0f, -1.0f, 0.0f},
-        {"scenario_9", 2.5f, 2.5f, 0.866f, 0.5f, -0.33f, 0.5716f},
-        {"scenario_10", 4.0f, 4.0f, 0.7071f, 0.7071f, -0.4667f, 0.4667f},
-        {"scenario_11", 1.5f, 6.5f, 0.5f, 0.866f, -0.5716f, 0.33f},
-        {"scenario_12", 1.5f, 6.5f, -0.7071f, 0.7071f, -0.4667f, -0.4667f},
-        {"scenario_13", 6.5f, 16.5f, -0.7071f, -0.7071f, 0.4667f, -0.4667f},
-        {"scenario_14", 40.0f, 40.0f, 0.0f, 1.0f, 0.66f, 0.0f},
-        {"scenario_15", 40.0f, 40.0f, 0.0f, -1.0f, 0.66f, 0.0f},
-        {"scenario_16", 35.8f, 27.2f, 0.7071f, 0.7071f, -0.4667f, 0.4667f}
-    };
+TOTAL_RAY_COUNT = 400
+RAYS_PER_CHUNK  = 400
 
-    int num_testes = sizeof(testes) / sizeof(testes[0]);
+TEST_SCENARIOS = [
+    ("scenario_1", 2.5, 2.5, 1.0, 0.0, 0.0, 0.66),
+    ("scenario_2", 18.5, 23.4, 0.0, 1.0, 0.66, 0.0),
+    ("scenario_3", 18.5, 23.4, -1.0, 0.0, 0.0, -0.66),
+    ("scenario_4", 18.5, 23.4, 0.0, -1.0, -0.66, 0.0),
+    ("scenario_5", 15.2, 31.8, 1.0, 0.0, 0.0, 1.0),
+    ("scenario_6", 12.6, 7.8, 0.0, 1.0, 0.8, 0.0),
+    ("scenario_7", 28.4, 6.4, -1.0, 0.0, 0.0, -0.8),
+    ("scenario_8", 2.6, 9.2, 0.0, -1.0, -1.0, 0.0),
+    ("scenario_9", 2.5, 2.5, 0.866, 0.5, -0.33, 0.5716),
+    ("scenario_10", 4.0, 4.0, 0.7071, 0.7071, -0.4667, 0.4667),
+    ("scenario_11", 1.5, 6.5, 0.5, 0.866, -0.5716, 0.33),
+    ("scenario_12", 1.5, 6.5, -0.7071, 0.7071, -0.4667, -0.4667),
+    ("scenario_13", 6.5, 16.5, -0.7071, -0.7071, 0.4667, -0.4667),
+    ("scenario_14", 40.0, 40.0, 0.0, 1.0, 0.66, 0.0),
+    ("scenario_15", 40.0, 40.0, 0.0, -1.0, 0.66, 0.0),
+    ("scenario_16", 7, 8, 0.7071, 0.7071, -0.4667, 0.4667)
+]
 
-    double scenarios_runtime[100] = {0};
+def bitpack_map(map_data, width, height):
+    total  = width * height
+    packed = bytearray((total + 7) // 8)
+    for i, val in enumerate(map_data):
+        if val:
+            packed[i >> 3] |= (1 << (i & 7))
+    return bytes(packed)
 
-    LARGE_INTEGER frequency;
-    QueryPerformanceFrequency(&frequency);
 
-    for (int i = 0; i < num_testes; i++) 
-    {
-        LARGE_INTEGER start, end;
-        QueryPerformanceCounter(&start);
 
-        for (int iter = 0; iter < EXEC_AMOUNT; iter++)
-        {
-            raycast_dda(
-                MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
-                testes[i].ORIGIN_X_INPUT, testes[i].ORIGIN_Y_INPUT,
-                testes[i].ORIGIN_DIR_X_INPUT, testes[i].ORIGIN_DIR_Y_INPUT,
-                testes[i].PLANE_X_INPUT, testes[i].PLANE_Y_INPUT,
-                RAY_COUNT_OUTPUT, ray_distances_ouput);
-        }
 
-        QueryPerformanceCounter(&end);
-        scenarios_runtime[i] = (double)(end.QuadPart - start.QuadPart) * 1000000.0 / frequency.QuadPart / EXEC_AMOUNT;
+packed_map = bitpack_map(MAP_INPUT, MAP_WIDTH, MAP_HEIGHT)
+map_bytes  = len(packed_map)
 
-        char filename[100] = { 0 };
-        sprintf(filename, "res_%s.txt", testes[i].nome_teste);
+# Alterado de float ('f') para int32 ('i')
+FORMATO = f'<{map_bytes}sBBiiiiiiHH'
 
-        FILE* arquivo = fopen(filename, "w");
-        if (arquivo != NULL) 
-        {
-            for (int j = 0; j < RAY_COUNT_OUTPUT; j++)
-            {
-                fprintf(arquivo, "%f\n", ray_distances_ouput[j]);
-            }
+num_chunks = TOTAL_RAY_COUNT // RAYS_PER_CHUNK
 
-            fclose(arquivo);
-            // printf("Arquivo '%s' gerado com sucesso.\n", filename);
-        }
+print(f"Mapa bit-packed           : {map_bytes} bytes  (era {MAP_WIDTH * MAP_HEIGHT} bytes)")
+print(f"Total de raios            : {TOTAL_RAY_COUNT}")
+print(f"Raios por chunk           : {RAYS_PER_CHUNK}")
+print(f"Número de chunks          : {num_chunks}")
+print(f"Cenários a executar       : {len(TEST_SCENARIOS)}\n")
 
-        sprintf(filename, "res_%s.ppm", testes[i].nome_teste);
-        save_raycast_visualization(
-            MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
-            testes[i].ORIGIN_X_INPUT, testes[i].ORIGIN_Y_INPUT,
-            testes[i].ORIGIN_DIR_X_INPUT, testes[i].ORIGIN_DIR_Y_INPUT,
-            testes[i].PLANE_X_INPUT, testes[i].PLANE_Y_INPUT,
-            RAY_COUNT_OUTPUT, ray_distances_ouput, filename);
-    }
+ser = serial.Serial(
+    port='COM6',
+    baudrate=38400,
+    timeout=10,
+)
 
-    for (int i = 0; i < num_testes; i++)
-    {
-        printf("scenario [%d] %f us\n", i, scenarios_runtime[i]);
-    }
+time.sleep(2)
 
-    return 0;
-}
+for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, start=1):
+
+    print(f"{'='*60}")
+    print(f"Cenário {scenario_idx}/{len(TEST_SCENARIOS)}: {name}")
+    print(f"  origin=({ox}, {oy})  dir=({dx}, {dy})  plane=({px}, {py})")
+
+    # Conversão para Ponto Fixo Q16.16 (multiplica por 65536 e converte para int)
+    q_ox = int(ox * 65536.0)
+    q_oy = int(oy * 65536.0)
+    q_dx = int(dx * 65536.0)
+    q_dy = int(dy * 65536.0)
+    q_px = int(px * 65536.0)
+    q_py = int(py * 65536.0)
+
+    buffer = struct.pack(
+        FORMATO,
+        packed_map,
+        MAP_WIDTH,
+        MAP_HEIGHT,
+        q_ox, q_oy, q_dx, q_dy, q_px, q_py,
+        TOTAL_RAY_COUNT,
+        RAYS_PER_CHUNK,
+    )
+
+    print(f"  Tamanho do pacote: {len(buffer)} bytes")
+
+    ser.reset_input_buffer()
+    ser.write(buffer)
+    print("  Pacote enviado. Aguardando respostas...\n")
+
+    all_distances = []
+    error_occurred = False
+
+    for chunk_idx in range(num_chunks):
+        rays_in_chunk = min(RAYS_PER_CHUNK, TOTAL_RAY_COUNT - chunk_idx * RAYS_PER_CHUNK)
+        raw = ser.read(rays_in_chunk * 4)
+
+        # Alterado de float para int32
+        fixed_distances = struct.unpack(f'<{rays_in_chunk}i', raw)
+        
+        # Converte de volta de Ponto Fixo para Float
+        distances = [d / 65536.0 for d in fixed_distances]
+        
+        all_distances.extend(distances)
+
+        formatted = " ".join(f"{d:.6f}" for d in distances)
+        print(f"  Chunk {chunk_idx + 1:02d}/{num_chunks}: [{formatted}]")
+
+    print(f"\n  Total de distâncias recebidas: {len(all_distances)}")
+
+    if not error_occurred:
+        output_file = f"out/build/x64-Debug/tests/res_output_{scenario_idx}.txt"
+        with open(output_file, "w") as f:
+            f.write("\n".join(f"{d:.6f}" for d in all_distances) + "\n")
+        print(f"  Resultados salvos em {output_file}\n")
+    else:
+        print(f"  [AVISO] Cenário {scenario_idx} incompleto — arquivo não salvo.\n")
+
+
+print("="*60)
+print("Todos os cenários concluídos.")
+
+ser.close()
