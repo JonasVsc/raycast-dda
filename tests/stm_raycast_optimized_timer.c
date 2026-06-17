@@ -3,6 +3,7 @@
 
 #define MAX_MAP_BYTES      800
 #define MAX_RAYS_PER_CHUNK 400
+#define EXEC_AMOUNT        50
 
 #define FIXED_FRAC_BITS 16
 #define INT_TO_FIXED(x) ((x) << FIXED_FRAC_BITS)
@@ -157,26 +158,37 @@ int main(void)
             chunk_size = MAX_RAYS_PER_CHUNK;
 
         int ray_start = 0;
+        uint32_t total_scenario_time_ms = 0;
+
         while (ray_start < total_rays)
         {
             int rays_this_chunk = chunk_size;
             if (ray_start + rays_this_chunk > total_rays)
                 rays_this_chunk = total_rays - ray_start;
-            raycast_dda(
-                header.map_data,
-                (int)header.width,
-                (int)header.height,
-                header.origin_x,
-                header.origin_y,
-                header.dir_x,
-                header.dir_y,
-                header.plane_x,
-                header.plane_y,
-                total_rays,
-                ray_start,
-                rays_this_chunk,
-                chunk_out
-            );
+            
+            uint32_t start_time = HAL_GetTick();
+            
+            for (int iter = 0; iter < EXEC_AMOUNT; iter++)
+            {
+                raycast_dda(
+                    header.map_data,
+                    (int)header.width,
+                    (int)header.height,
+                    header.origin_x,
+                    header.origin_y,
+                    header.dir_x,
+                    header.dir_y,
+                    header.plane_x,
+                    header.plane_y,
+                    total_rays,
+                    ray_start,
+                    rays_this_chunk,
+                    chunk_out
+                );
+            }
+            
+            uint32_t end_time = HAL_GetTick();
+            total_scenario_time_ms += (end_time - start_time);
 
             HAL_UART_Transmit(&huart2,
                 (uint8_t*)chunk_out,
@@ -184,6 +196,9 @@ int main(void)
                 HAL_MAX_DELAY);
             ray_start += rays_this_chunk;
         }
+
+        float avg_time_us = (float)total_scenario_time_ms * 1000.0f / EXEC_AMOUNT;
+        HAL_UART_Transmit(&huart2, (uint8_t*)&avg_time_us, sizeof(float), HAL_MAX_DELAY);
 
     }
 }

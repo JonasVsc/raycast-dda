@@ -10,6 +10,15 @@ target_link_libraries(Test8KB
 		RaycastDDAVisualizer::RaycastDDAVisualizer
 )
 
+if(MSVC)
+    target_link_options(Test8KB 
+		PRIVATE 
+			/MAP
+			/OPT:REF
+			/OPT:ICF
+	)
+endif()
+
 add_test(NAME Test8KB COMMAND Test8KB)
 
 # executable with scenarios test also output scenarios images

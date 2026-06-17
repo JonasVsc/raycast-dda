@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
         {"scenario_13", 6.5f, 16.5f, -0.7071f, -0.7071f, 0.4667f, -0.4667f},
         {"scenario_14", 40.0f, 40.0f, 0.0f, 1.0f, 0.66f, 0.0f},
         {"scenario_15", 40.0f, 40.0f, 0.0f, -1.0f, 0.66f, 0.0f},
-        {"scenario_16", 35.8f, 27.2f, 0.7071f, 0.7071f, -0.4667f, 0.4667f}
+        {"scenario_16", 7.0f, 8.0f, 0.7071f, 0.7071f, -0.4667f, 0.4667f}
     };
 
     int num_testes = sizeof(testes) / sizeof(testes[0]);

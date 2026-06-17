@@ -14,9 +14,9 @@ void raycast_dda(
     float dir_y,   
     float plane_x, 
     float plane_y, 
-
+    
     int ray_count,
-    float* out_distances) 
+    float* out_distances)
 {
     for (int x = 0; x < ray_count; x++) 
     {
@@ -38,7 +38,7 @@ void raycast_dda(
         int hit = 0;
         int side = 0;
 
-        if (ray_dir_x < 0) 
+        if (ray_dir_x < 0)
         {
             step_x = -1;
             float dist_top_edge = origin_x - map_x;
