@@ -1,6 +1,7 @@
 import struct
 import serial
 import time
+import statistics
 
 MAP_WIDTH  = 80
 MAP_HEIGHT = 80
@@ -189,12 +190,36 @@ for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, st
 
     print(f"\n  Total de distâncias recebidas: {len(all_distances)}")
 
-    raw_time = ser.read(4)
-    if len(raw_time) == 4:
-        avg_time_us = struct.unpack('<f', raw_time)[0]
-        print(f"  Tempo médio de execução: {avg_time_us:.2f} us")
+    EXEC_AMOUNT = 1000
+    expected_time_bytes = EXEC_AMOUNT * 4
+    raw_time = ser.read(expected_time_bytes)
+    if len(raw_time) == expected_time_bytes:
+        exec_times = struct.unpack(f'<{EXEC_AMOUNT}I', raw_time)
+        
+        media = statistics.mean(exec_times)
+        mediana = statistics.median(exec_times)
+        variancia = statistics.variance(exec_times) if len(exec_times) > 1 else 0
+        desvio_padrao = statistics.stdev(exec_times) if len(exec_times) > 1 else 0
+        minimo = min(exec_times)
+        maximo = max(exec_times)
+        amplitude = maximo - minimo
+
+        print(f"  Tempos recebidos: {len(exec_times)}")
+        print(f"  Média           : {media:.4f} ms")
+        print(f"  Mediana         : {mediana:.4f} ms")
+        print(f"  Desvio Padrão   : {desvio_padrao:.4f} ms")
+        print(f"  Variância       : {variancia:.4f} ms^2")
+        print(f"  Mínimo          : {minimo} ms")
+        print(f"  Máximo          : {maximo} ms")
+        print(f"  Amplitude       : {amplitude} ms")
+
+        # Salva o array de tempos em um arquivo de log
+        time_output_file = f"out/build/x64-Debug/tests/times_output_{scenario_idx}.txt"
+        with open(time_output_file, "w") as f:
+            f.write("\n".join(str(t) for t in exec_times) + "\n")
+        print(f"  Tempos salvos em {time_output_file}")
     else:
-        print("  [AVISO] Falha ao ler o tempo de execução.")
+        print(f"  [AVISO] Falha ao ler os tempos de execução. Recebeu {len(raw_time)} bytes.")
 
     if not error_occurred:
         output_file = f"out/build/x64-Debug/tests/res_output_{scenario_idx}.txt"

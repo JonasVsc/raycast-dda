@@ -158,7 +158,8 @@ int main(void)
             chunk_size = MAX_RAYS_PER_CHUNK;
 
         int ray_start = 0;
-        uint32_t total_scenario_time_ms = 0;
+        static uint32_t iteration_times[EXEC_AMOUNT];
+        memset(iteration_times, 0, sizeof(iteration_times));
 
         while (ray_start < total_rays)
         {
@@ -166,10 +167,9 @@ int main(void)
             if (ray_start + rays_this_chunk > total_rays)
                 rays_this_chunk = total_rays - ray_start;
             
-            uint32_t start_time = HAL_GetTick();
-            
             for (int iter = 0; iter < EXEC_AMOUNT; iter++)
             {
+                uint32_t start_time = HAL_GetTick();
                 raycast_dda(
                     header.map_data,
                     (int)header.width,
@@ -185,10 +185,9 @@ int main(void)
                     rays_this_chunk,
                     chunk_out
                 );
+                uint32_t end_time = HAL_GetTick();
+                iteration_times[iter] += (end_time - start_time);
             }
-            
-            uint32_t end_time = HAL_GetTick();
-            total_scenario_time_ms += (end_time - start_time);
 
             HAL_UART_Transmit(&huart2,
                 (uint8_t*)chunk_out,
@@ -197,8 +196,7 @@ int main(void)
             ray_start += rays_this_chunk;
         }
 
-        float avg_time_us = (float)total_scenario_time_ms * 1000.0f / EXEC_AMOUNT;
-        HAL_UART_Transmit(&huart2, (uint8_t*)&avg_time_us, sizeof(float), HAL_MAX_DELAY);
+        HAL_UART_Transmit(&huart2, (uint8_t*)iteration_times, sizeof(iteration_times), HAL_MAX_DELAY);
 
     }
 }
