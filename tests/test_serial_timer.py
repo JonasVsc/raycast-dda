@@ -196,22 +196,22 @@ for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, st
     if len(raw_time) == expected_time_bytes:
         exec_times = struct.unpack(f'<{EXEC_AMOUNT}I', raw_time)
         
-        media = statistics.mean(exec_times)
-        mediana = statistics.median(exec_times)
-        variancia = statistics.variance(exec_times) if len(exec_times) > 1 else 0
-        desvio_padrao = statistics.stdev(exec_times) if len(exec_times) > 1 else 0
-        minimo = min(exec_times)
-        maximo = max(exec_times)
-        amplitude = maximo - minimo
+        media_us = statistics.mean(exec_times) * 1000.0
+        mediana_us = statistics.median(exec_times) * 1000.0
+        variancia_us = statistics.variance(exec_times) * 1000000.0 if len(exec_times) > 1 else 0
+        desvio_padrao_us = statistics.stdev(exec_times) * 1000.0 if len(exec_times) > 1 else 0
+        minimo_us = min(exec_times) * 1000.0
+        maximo_us = max(exec_times) * 1000.0
+        amplitude_us = maximo_us - minimo_us
 
         print(f"  Tempos recebidos: {len(exec_times)}")
-        print(f"  Média           : {media:.4f} ms")
-        print(f"  Mediana         : {mediana:.4f} ms")
-        print(f"  Desvio Padrão   : {desvio_padrao:.4f} ms")
-        print(f"  Variância       : {variancia:.4f} ms^2")
-        print(f"  Mínimo          : {minimo} ms")
-        print(f"  Máximo          : {maximo} ms")
-        print(f"  Amplitude       : {amplitude} ms")
+        print(f"  Média           : {media_us:.3f} us")
+        print(f"  Mediana         : {mediana_us:.3f} us")
+        print(f"  Desvio Padrão   : {desvio_padrao_us:.3f} us")
+        print(f"  Variância       : {variancia_us:.3f} us^2")
+        print(f"  Mínimo          : {minimo_us:.0f} us")
+        print(f"  Máximo          : {maximo_us:.0f} us")
+        print(f"  Amplitude       : {amplitude_us:.0f} us")
 
         # Salva o array de tempos em um arquivo de log
         time_output_file = f"out/build/x64-Debug/tests/times_output_{scenario_idx}.txt"
