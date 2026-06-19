@@ -109,7 +109,7 @@ struct TestConfig
 int main() {
 
     std::vector<TestConfig> testes = {
-        {"scenario_1", 2.5f, 2.5f, 1.0f, 0.0f, 0.0f, 0.66f},
+        {"scenario_1", 1.2f, 1.2f, -1.0f, 0.0f, 0.0f, 1.0f},
         {"scenario_2", 18.5f, 23.4f, 0.0f, 1.0f, 0.66f, 0.0f},
         {"scenario_3", 18.5f, 23.4f, -1.0f, 0.0f, 0.0f, -0.66f},
         {"scenario_4", 18.5f, 23.4f, 0.0f, -1.0f, -0.66f, 0.0f},
@@ -124,7 +124,7 @@ int main() {
         {"scenario_13", 6.5f, 16.5f, -0.7071f, -0.7071f, 0.4667f, -0.4667f},
         {"scenario_14", 40.0f, 40.0f, 0.0f, 1.0f, 0.66f, 0.0f},
         {"scenario_15", 40.0f, 40.0f, 0.0f, -1.0f, 0.66f, 0.0f},
-        {"scenario_16", 35.8f, 27.2f, 0.7071f, 0.7071f, -0.4667f, 0.4667f}
+        {"scenario_16", 1.1f, 1.1f, 0.7071f, 0.7071f, -0.4667f, 0.4667f}
     };
 
     int scenario_counter{ 0 };
@@ -235,7 +235,7 @@ int main() {
             }
 
             arquivoSaida.close();
-            // std::cout << "Sucesso: " << nomeArquivo << " gerado." << std::endl;
+            std::cout << "Sucesso: " << nomeArquivo << " gerado." << std::endl;
         }
     }
 
