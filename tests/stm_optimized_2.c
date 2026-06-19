@@ -18,31 +18,21 @@ typedef struct __attribute__((packed)) {
     uint16_t  rays_per_chunk;
 } RaycastHeader;
 
-typedef struct {
-    float side_dist_x;
-    float side_dist_y;
-    float delta_dist_x;
-    float delta_dist_y;
-    int   map_x;
-    int   map_y;
-    int   step_x;
-    int   step_y;
-} DDAState;
-
 UART_HandleTypeDef huart2;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 
-static uint8_t map_get(uint8_t* map, int x, int y, int width)
+static __attribute__((always_inline)) inline
+uint8_t map_get(const uint8_t* restrict map, int x, int y, int width)
 {
     int idx = x * width + y;
     return (map[idx >> 3] >> (idx & 7)) & 1u;
 }
 
 void raycast_dda(
-    uint8_t* map,
+    const uint8_t* restrict map,
     int   map_width,
     int   map_height,
     float origin_x,
@@ -58,69 +48,71 @@ void raycast_dda(
 {
     for (int i = 0; i < ray_chunk_count; i++)
     {
+
         int x = ray_start + i;
         float camera_x_normalized = 2.0f * x / (float)total_ray_count - 1.0f;
         float ray_dir_x = dir_x + plane_x * camera_x_normalized;
         float ray_dir_y = dir_y + plane_y * camera_x_normalized;
-        
-        DDAState s;
-        s.map_x = (int)origin_x;
-        s.map_y = (int)origin_y;
-        s.delta_dist_x = (ray_dir_x == 0.0f) ? INFINITY : fabsf(1.0f / ray_dir_x);
-        s.delta_dist_y = (ray_dir_y == 0.0f) ? INFINITY : fabsf(1.0f / ray_dir_y);
-        
+        int map_x = (int)origin_x;
+        int map_y = (int)origin_y;
+        float delta_dist_x = (ray_dir_x == 0.0f) ? INFINITY : fabsf(1.0f / ray_dir_x);
+        float delta_dist_y = (ray_dir_y == 0.0f) ? INFINITY : fabsf(1.0f / ray_dir_y);
+        float side_dist_x;
+        float side_dist_y;
+        int step_x;
+        int step_y;
         int hit = 0;
         int side = 0;
         if (ray_dir_x < 0.0f)
         {
-            s.step_x = -1;
-            s.side_dist_x = (origin_x - s.map_x) * s.delta_dist_x;
+            step_x = -1;
+            side_dist_x = (origin_x - map_x) * delta_dist_x;
         }
         else
         {
-            s.step_x = 1;
-            s.side_dist_x = (s.map_x + 1.0f - origin_x) * s.delta_dist_x;
+            step_x = 1;
+            side_dist_x = (map_x + 1.0f - origin_x) * delta_dist_x;
         }
         if (ray_dir_y < 0.0f)
         {
-            s.step_y = -1;
-            s.side_dist_y = (origin_y - s.map_y) * s.delta_dist_y;
+            step_y = -1;
+            side_dist_y = (origin_y - map_y) * delta_dist_y;
         }
         else
         {
-            s.step_y = 1;
-            s.side_dist_y = (s.map_y + 1.0f - origin_y) * s.delta_dist_y;
+            step_y = 1;
+            side_dist_y = (map_y + 1.0f - origin_y) * delta_dist_y;
         }
 
         out_distances[i] = -1.0f;
         while (!hit)
         {
-            if (s.side_dist_x < s.side_dist_y)
+            if (side_dist_x < side_dist_y)
             {
-                s.side_dist_x += s.delta_dist_x;
-                s.map_x += s.step_x;
+                side_dist_x += delta_dist_x;
+                map_x += step_x;
                 side = 0;
             }
             else
             {
-                s.side_dist_y += s.delta_dist_y;
-                s.map_y += s.step_y;
+                side_dist_y += delta_dist_y;
+                map_y += step_y;
                 side = 1;
             }
 
-            if (s.map_x < 0 || s.map_x >= map_width ||
-                s.map_y < 0 || s.map_y >= map_height)
+            if (map_x < 0 || map_x >= map_width ||
+                map_y < 0 || map_y >= map_height)
             {
                 hit = 1;
                 continue;
             }
 
-            if (map_get(map, s.map_x, s.map_y, map_width) == 1u)
+            if (map_get(map, map_x, map_y, map_width) == 1u)
             {
                 hit = 1;
                 out_distances[i] = (side == 0)
-                    ? (s.side_dist_x - s.delta_dist_x)
-                    : (s.side_dist_y - s.delta_dist_y);
+                    ? (side_dist_x - delta_dist_x)
+                    : (side_dist_y - delta_dist_y);
             }
         }
     }
