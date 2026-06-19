@@ -7,8 +7,6 @@ project("RaycastDDAAlgorithm"
 
 enable_testing()
 
-set(CMAKE_BUILD_TYPE Release)
-
 add_subdirectory(raycast-dda)
 add_subdirectory(raycast-dda-visualizer)
 add_subdirectory(tests)
