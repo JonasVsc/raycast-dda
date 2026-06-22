@@ -4,8 +4,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include <math.h>
 
-#define EXEC_AMOUNT 50
+int compare_doubles(const void* a, const void* b) {
+    double arg1 = *(const double*)a;
+    double arg2 = *(const double*)b;
+    if (arg1 < arg2) return -1;
+    if (arg1 > arg2) return 1;
+    return 0;
+}
+
+typedef struct Metrics {
+    double mean;
+    double median;
+    double variance;
+    double std_dev;
+    double min;
+    double max;
+    double amplitude;
+} Metrics;
+
+
+#define TOTAL_ITERATIONS 1500
+#define WARMUP_ITERATIONS 500
+#define CALC_ITERATIONS (TOTAL_ITERATIONS - WARMUP_ITERATIONS)
 
 #define MAP_WIDTH 80
 #define MAP_HEIGHT 80
@@ -110,7 +132,7 @@ int main(int argc, char* argv[])
     float ray_distances_ouput[RAY_COUNT_OUTPUT];
 
     TestScenario testes[] = {
-        {"scenario_1", 1.2f, 1.2f, -1.0f, 0.0f, 0.0f, 1.0f},
+        {"scenario_1", 1.4f, 1.4f, -1.0f, 0.0f, 0.0f, 1.0f},
         //{"scenario_2", 18.5f, 23.4f, 0.0f, 1.0f, 0.66f, 0.0f},
         //{"scenario_3", 18.5f, 23.4f, -1.0f, 0.0f, 0.0f, -0.66f},
         //{"scenario_4", 18.5f, 23.4f, 0.0f, -1.0f, -0.66f, 0.0f},
@@ -130,28 +152,70 @@ int main(int argc, char* argv[])
 
     int num_testes = sizeof(testes) / sizeof(testes[0]);
 
-    double scenarios_runtime[100] = {0};
+    Metrics scenarios_metrics[100] = {0};
 
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
 
     for (int i = 0; i < num_testes; i++) 
     {
-        LARGE_INTEGER start, end;
-        QueryPerformanceCounter(&start);
+        double iter_runtimes[CALC_ITERATIONS];
 
-        for (int iter = 0; iter < EXEC_AMOUNT; iter++)
+        for (int iter = 0; iter < TOTAL_ITERATIONS; iter++)
         {
+            LARGE_INTEGER start, end;
+            QueryPerformanceCounter(&start);
+
             raycast_dda(
                 MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
                 testes[i].ORIGIN_X_INPUT, testes[i].ORIGIN_Y_INPUT,
                 testes[i].ORIGIN_DIR_X_INPUT, testes[i].ORIGIN_DIR_Y_INPUT,
                 testes[i].PLANE_X_INPUT, testes[i].PLANE_Y_INPUT,
                 RAY_COUNT_OUTPUT, ray_distances_ouput);
+
+            QueryPerformanceCounter(&end);
+            
+            if (iter >= WARMUP_ITERATIONS) {
+                iter_runtimes[iter - WARMUP_ITERATIONS] = (double)(end.QuadPart - start.QuadPart) * 1000000.0 / frequency.QuadPart;
+            }
         }
 
-        QueryPerformanceCounter(&end);
-        scenarios_runtime[i] = (double)(end.QuadPart - start.QuadPart) * 1000000.0 / frequency.QuadPart / EXEC_AMOUNT;
+        double min_val = iter_runtimes[0];
+        double max_val = iter_runtimes[0];
+        double sum = 0.0;
+
+        for (int iter = 0; iter < CALC_ITERATIONS; iter++) {
+            double val = iter_runtimes[iter];
+            if (val < min_val) min_val = val;
+            if (val > max_val) max_val = val;
+            sum += val;
+        }
+
+        double mean = sum / CALC_ITERATIONS;
+        double sum_sq_diff = 0.0;
+        for (int iter = 0; iter < CALC_ITERATIONS; iter++) {
+            double diff = iter_runtimes[iter] - mean;
+            sum_sq_diff += diff * diff;
+        }
+        double variance = sum_sq_diff / CALC_ITERATIONS;
+        double std_dev = sqrt(variance);
+        double amplitude = max_val - min_val;
+
+        qsort(iter_runtimes, CALC_ITERATIONS, sizeof(double), compare_doubles);
+        double median = 0.0;
+        if (CALC_ITERATIONS % 2 == 0) {
+            median = (iter_runtimes[CALC_ITERATIONS / 2 - 1] + iter_runtimes[CALC_ITERATIONS / 2]) / 2.0;
+        } else {
+            median = iter_runtimes[CALC_ITERATIONS / 2];
+        }
+
+        scenarios_metrics[i].mean = mean;
+        scenarios_metrics[i].median = median;
+        scenarios_metrics[i].variance = variance;
+        scenarios_metrics[i].std_dev = std_dev;
+        scenarios_metrics[i].min = min_val;
+        scenarios_metrics[i].max = max_val;
+        scenarios_metrics[i].amplitude = amplitude;
 
         char filename[100] = { 0 };
         sprintf(filename, "res_%s.txt", testes[i].nome_teste);
@@ -179,7 +243,15 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < num_testes; i++)
     {
-        printf("scenario [%d] %f us\n", i, scenarios_runtime[i]);
+        printf("scenario [%s]:\n", testes[i].nome_teste);
+        printf("  Media:          %f us\n", scenarios_metrics[i].mean);
+        printf("  Mediana:        %f us\n", scenarios_metrics[i].median);
+        printf("  Variancia:      %f us^2\n", scenarios_metrics[i].variance);
+        printf("  Desvio Padrao:  %f us\n", scenarios_metrics[i].std_dev);
+        printf("  Minimo:         %f us\n", scenarios_metrics[i].min);
+        printf("  Maximo:         %f us\n", scenarios_metrics[i].max);
+        printf("  Amplitude:      %f us\n", scenarios_metrics[i].amplitude);
+        printf("\n");
     }
 
     return 0;

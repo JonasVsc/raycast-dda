@@ -7,7 +7,6 @@ add_executable(Test8KB "test_8kb.c")
 target_link_libraries(Test8KB
 	PRIVATE 
 		RaycastDDA::RaycastDDA
-		RaycastDDAVisualizer::RaycastDDAVisualizer
 )
 
 if(MSVC)

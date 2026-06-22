@@ -1,12 +1,12 @@
 #include <raycast_dda.h>
-#include <stdint.h>
+
+
+#ifndef EXCLUDE_DATA
 
 #define MAP_WIDTH 80
 #define MAP_HEIGHT 80
 #define MAP_SIZE (MAP_WIDTH * MAP_HEIGHT)
-
 #define RAY_COUNT_OUTPUT 400
-
 
 static int MAP_INPUT[MAP_SIZE] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -90,7 +90,7 @@ static int MAP_INPUT[MAP_SIZE] = {
     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 };
-
+static float RAY_DISTANCES_OUTPUT[RAY_COUNT_OUTPUT] = { 0.0f };
 static float ORIGIN_X_INPUT = 1.1f;
 static float ORIGIN_Y_INPUT = 1.1f;
 
@@ -99,16 +99,21 @@ static float ORIGIN_DIR_Y_INPUT = 0.7071f;
 
 static float PLANE_X_INPUT = -0.4667f;
 static float PLANE_Y_INPUT = -0.4667f;
+#endif
 
-static float RAY_DISTANCES_OUTPUT[RAY_COUNT_OUTPUT] = { 0.0f };
 
 int main(int argc, char* argv[])
 {
+#ifndef EXCLUDE_DATA
     raycast_dda(
         MAP_INPUT, MAP_WIDTH, MAP_HEIGHT,
         ORIGIN_X_INPUT, ORIGIN_Y_INPUT, ORIGIN_DIR_X_INPUT, ORIGIN_DIR_Y_INPUT,
         PLANE_X_INPUT, PLANE_Y_INPUT,
         RAY_COUNT_OUTPUT, RAY_DISTANCES_OUTPUT);
+#else
+    // Referencia falsa para forcar o linker a incluir a funcao no .text
+    void* volatile dummy_ptr = (void*)&raycast_dda;
+#endif
 
     return 0;
 }
