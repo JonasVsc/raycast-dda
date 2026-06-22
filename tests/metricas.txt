@@ -1,0 +1,171 @@
+[2]
+
+arm-none-eabi-size  otimo.elf 
+arm-none-eabi-objdump -h -S otimo.elf  > "otimo.list"
+   text	   data	    bss	    dec	    hex	filename
+  10016	     12	   4340	  14368	   3820	otimo.elf
+Finished building: default.size.stdout
+
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 35140.000 us
+  Mediana         : 35000.000 us
+  Desvio Padrão   : 350.510 us
+  Variância       : 122857.143 us^2
+  Mínimo          : 35000 us
+  Máximo          : 36000 us
+  Amplitude       : 1000 us
+  Tempos salvos em ./times_output_1.txt
+  Resultados salvos em ./res_output_1.txt
+
+=====================================
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 306020.000 us
+  Mediana         : 306000.000 us
+  Desvio Padrão   : 141.421 us
+  Variância       : 20000.000 us^2
+  Mínimo          : 306000 us
+  Máximo          : 307000 us
+  Amplitude       : 1000 us
+  Tempos salvos em ./times_output_2.txt
+  Resultados salvos em ./res_output_2.txt
+
+
+
+
+
+[4]
+
+arm-none-eabi-size  otimo.elf 
+arm-none-eabi-objdump -h -S otimo.elf  > "otimo.list"
+   text	   data	    bss	    dec	    hex	filename
+  10024	     12	   4340	  14376	   3828	otimo.elf
+Finished building: default.size.stdout
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 30600.000 us
+  Mediana         : 31000.000 us
+  Desvio Padrão   : 494.872 us
+  Variância       : 244897.959 us^2
+  Mínimo          : 30000 us
+  Máximo          : 31000 us
+  Amplitude       : 1000 us
+  Tempos salvos em ./times_output_1.txt
+  Resultados salvos em ./res_output_1.txt
+
+============================
+
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 311340.000 us
+  Mediana         : 311000.000 us
+  Desvio P…
+
+
+
+
+[2 e 4]
+
+arm-none-eabi-size  otimo.elf 
+arm-none-eabi-objdump -h -S otimo.elf  > "otimo.list"
+   text	   data	    bss	    dec	    hex	filename
+  10008	     12	   4340	  14360	   3818	otimo.elf
+Finished building: default.size.stdout
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 30360.000 us
+  Mediana         : 30000.000 us
+  Desvio Padrão   : 484.873 us
+  Variância       : 235102.041 us^2
+  Mínimo          : 30000 us
+  Máximo          : 31000 us
+  Amplitude       : 1000 us
+  Tempos salvos em ./times_output_1.txt
+  Resultados salvos em ./res_output_1.txt
+
+============================
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 296820.000 us
+  Mediana         : 297000.000 us
+  Desvio Padrão …
+
+
+
+[sem otimizacao]
+
+arm-none-eabi-size  otimo.elf 
+arm-none-eabi-objdump -h -S otimo.elf  > "otimo.list"
+   text	   data	    bss	    dec	    hex	filename
+  10028	     12	   4340	  14380	   382c	otimo.elf
+Finished building: default.size.stdout
+
+
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 35240.000 us
+  Mediana         : 35000.000 us
+  Desvio Padrão   : 431.419 us
+  Variância       : 186122.449 us^2
+  Mínimo          : 35000 us
+  Máximo          : 36000 us
+  Amplitude       : 1000 us
+  Tempos salvos em ./times_output_1.txt
+  Resultados salvos em ./res_output_1.txt
+
+=================================
+
+  Total de distâncias recebidas: 400
+  Tempos recebidos: 50
+  Média           : 317000.000 us
+  Mediana         : 317000.000 us
+  Desvio Padrão   : 0.000 us
+  Variância       : 0.000 us^2
+  Mínimo          : 317000 us
+  Máximo          : 317000 us
+  Amplitude       : 0 us
+  Tempos salvos em ./times_output_2.txt
+  Resultados salvos em ./res_output_2.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+  sem otimizacao compilado sem o algoritmo:
+
+arm-none-eabi-size  otimo.elf 
+   text	   data	    bss	    dec	    hex	filename
+   4868	     12	   4340	   9220	   2404	otimo.elf
+Finished building: default.size.stdout
+
+
+
+
+
+
+
+
+
+
+
+somente do algoritmo
+
+.text 5160
+.data 12
+.bss 4340

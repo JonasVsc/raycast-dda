@@ -54,8 +54,8 @@ int main()
     char nome_res[255];
     char nome_ref[255];
 
-    sprintf(nome_res, "ref_scenario_1.txt", i);
-    sprintf(nome_ref, "res_output.txt", i);
+    sprintf(nome_res, "res_scenario_1.txt", i);
+    sprintf(nome_ref, "res_output_1.txt", i);
 
     comparar_arquivos(nome_res, nome_ref);
 

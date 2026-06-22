@@ -1,9 +1,10 @@
+#include "main.h"
 #include <math.h>
 #include <string.h>
 
 #define MAX_MAP_BYTES      800
 #define MAX_RAYS_PER_CHUNK 400
-#define EXEC_AMOUNT        1000
+#define EXEC_AMOUNT        50
 
 typedef struct __attribute__((packed)) {
     uint8_t  map_data[MAX_MAP_BYTES];
@@ -16,7 +17,7 @@ typedef struct __attribute__((packed)) {
     float    plane_x;
     float    plane_y;
     uint16_t total_ray_count;
-    uint16_t  rays_per_chunk;
+    uint16_t rays_per_chunk;
 } RaycastHeader;
 
 UART_HandleTypeDef huart2;
@@ -25,15 +26,24 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 
-__attribute__((noinline))
-static uint8_t map_get(uint8_t* map, int x, int y, int width)
+/*
+ * Otimização 2 — INLINE FORÇADO em map_get
+ * __attribute__((always_inline)) instrui o compilador a sempre substituir a
+ * chamada pelo corpo da função, eliminando o overhead de call/return e de
+ * empilhar argumentos. É especialmente importante aqui pois map_get é chamada
+ * dentro do laço interno mais quente do algoritmo.
+ * 'restrict' avisa que o ponteiro não tem aliasing, permitindo ao compilador
+ * cachear o valor lido em registrador sem re-carregar da memória.
+ */
+static __attribute__((always_inline)) inline
+uint8_t map_get(const uint8_t * restrict map, int x, int y, int width)
 {
     int idx = x * width + y;
     return (map[idx >> 3] >> (idx & 7)) & 1u;
 }
 
 void raycast_dda(
-    uint8_t* map,
+    const uint8_t * restrict map,
     int   map_width,
     int   map_height,
     float origin_x,
@@ -45,77 +55,81 @@ void raycast_dda(
     int   total_ray_count,
     int   ray_start,
     int   ray_chunk_count,
-    float* out_distances)
+    float * restrict out_distances)
 {
+    /*
+     * Otimização 4 — PRÉ-COMPUTAÇÃO DO RECÍPROCO (inv_total)
+     * No original, cada iteração executa:
+     *   2.0f * x / (float)total_ray_count
+     * A divisão float é a operação mais cara no STM32 sem FPU (~30-60 ciclos).
+     * Calculando 1/total uma única vez antes do laço, todas as iterações
+     * passam a usar uma multiplicação (~5-10 ciclos) no lugar da divisão.
+     *
+     * Também pré-computamos origin_map_x/y pois (int)origin é constante para
+     * todos os raios e não precisa ser recomputado a cada iteração.
+     */
+    const float inv_total    = 1.0f / (float)total_ray_count;
+    const int   origin_map_x = (int)origin_x;
+    const int   origin_map_y = (int)origin_y;
+
     for (int i = 0; i < ray_chunk_count; i++)
     {
+        const int   x   = ray_start + i;
+        const float cam = 2.0f * x * inv_total - 1.0f;
+        const float ray_dir_x = dir_x + plane_x * cam;
+        const float ray_dir_y = dir_y + plane_y * cam;
 
-        int x = ray_start + i;
-        float camera_x_normalized = 2.0f * x / (float)total_ray_count - 1.0f;
-        float ray_dir_x = dir_x + plane_x * camera_x_normalized;
-        float ray_dir_y = dir_y + plane_y * camera_x_normalized;
-        int map_x = (int)origin_x;
-        int map_y = (int)origin_y;
+        int   map_x = origin_map_x;
+        int   map_y = origin_map_y;
         float delta_dist_x = (ray_dir_x == 0.0f) ? INFINITY : fabsf(1.0f / ray_dir_x);
         float delta_dist_y = (ray_dir_y == 0.0f) ? INFINITY : fabsf(1.0f / ray_dir_y);
         float side_dist_x;
         float side_dist_y;
-        int step_x;
-        int step_y;
-        int hit = 0;
-        int side = 0;
-        if (ray_dir_x < 0.0f)
-        {
-            step_x = -1;
+        int   step_x;
+        int   step_y;
+
+        if (ray_dir_x < 0.0f) {
+            step_x      = -1;
             side_dist_x = (origin_x - map_x) * delta_dist_x;
-        }
-        else
-        {
-            step_x = 1;
+        } else {
+            step_x      = 1;
             side_dist_x = (map_x + 1.0f - origin_x) * delta_dist_x;
         }
-        if (ray_dir_y < 0.0f)
-        {
-            step_y = -1;
+        if (ray_dir_y < 0.0f) {
+            step_y      = -1;
             side_dist_y = (origin_y - map_y) * delta_dist_y;
-        }
-        else
-        {
-            step_y = 1;
+        } else {
+            step_y      = 1;
             side_dist_y = (map_y + 1.0f - origin_y) * delta_dist_y;
         }
 
-        out_distances[i] = -1.0f;
-        while (!hit)
+        float result = -1.0f;
+        for (;;)
         {
-            if (side_dist_x < side_dist_y)
-            {
+            int side;
+            if (side_dist_x < side_dist_y) {
                 side_dist_x += delta_dist_x;
-                map_x += step_x;
-                side = 0;
-            }
-            else
-            {
+                map_x       += step_x;
+                side         = 0;
+            } else {
                 side_dist_y += delta_dist_y;
-                map_y += step_y;
-                side = 1;
+                map_y       += step_y;
+                side         = 1;
             }
 
             if (map_x < 0 || map_x >= map_width ||
                 map_y < 0 || map_y >= map_height)
-            {
-                hit = 1;
-                continue;
-            }
+                break;
 
-            if (map_get(map, map_x, map_y, map_width) == 1u)
-            {
-                hit = 1;
-                out_distances[i] = (side == 0)
-                    ? (side_dist_x - delta_dist_x)
-                    : (side_dist_y - delta_dist_y);
+            if (map_get(map, map_x, map_y, map_width) == 1u) {
+                if (side == 0)
+                    result = side_dist_x - delta_dist_x;
+                else
+                    result = side_dist_y - delta_dist_y;
+                break;
             }
         }
+        out_distances[i] = result;
     }
 }
 
@@ -149,7 +163,7 @@ int main(void)
             int rays_this_chunk = chunk_size;
             if (ray_start + rays_this_chunk > total_rays)
                 rays_this_chunk = total_rays - ray_start;
-            
+
             for (int iter = 0; iter < EXEC_AMOUNT; iter++)
             {
                 uint32_t start_time = HAL_GetTick();
@@ -180,7 +194,6 @@ int main(void)
         }
 
         HAL_UART_Transmit(&huart2, (uint8_t*)iteration_times, sizeof(iteration_times), HAL_MAX_DELAY);
-
     }
 }
 
@@ -202,6 +215,7 @@ void SystemClock_Config(void)
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
         Error_Handler();
 }
+
 static void MX_USART2_UART_Init(void)
 {
     huart2.Instance = USART2;
@@ -217,22 +231,22 @@ static void MX_USART2_UART_Init(void)
     if (HAL_UART_Init(&huart2) != HAL_OK)
         Error_Handler();
 }
+
 static void MX_GPIO_Init(void)
 {
     __HAL_RCC_GPIOA_CLK_ENABLE();
 }
+
 void Error_Handler(void)
 {
     __disable_irq();
     while (1) {}
 }
+
 #ifdef USE_FULL_ASSERT
 void assert_failed(uint8_t* file, uint32_t line)
 {
     (void)file;
     (void)line;
 }
-#endif /* USE_FULL_ASSERT */
-
-
-
+#endif

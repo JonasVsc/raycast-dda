@@ -128,7 +128,7 @@ int main() {
             float dirX = config.dirX, dirY = config.dirY;
             float planeX = config.planeX, planeY = config.planeY;
 
-        for (int x = 0; x < screenWidth; x++) 
+        for (int x = 0; x < screenWidth; x++)
         {
             float cameraX = 2 * x / (float)screenWidth - 1;
             float rayDirX = dirX + planeX * cameraX;

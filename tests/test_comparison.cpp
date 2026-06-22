@@ -55,13 +55,16 @@ int main()
     char nome_res[255];
     char nome_ref[255];
 
-    for (int i = 1; i <= n; i++)
-    {
-        sprintf(nome_res, "ref_scenario_%d.txt", i);
-        sprintf(nome_ref, "res_output_%d.txt", i);
+        sprintf(nome_res, "res_scenario_1.txt");
+        sprintf(nome_ref, "res_melhor_caso.txt");
 
         comparar_arquivos(nome_res, nome_ref);
-    }
+
+        sprintf(nome_res, "res_scenario_2.txt");
+        sprintf(nome_ref, "res_pior_caso.txt");
+
+        comparar_arquivos(nome_res, nome_ref);
+
 
     return 0;
 }

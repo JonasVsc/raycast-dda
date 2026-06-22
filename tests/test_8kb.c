@@ -1,5 +1,6 @@
 #include <raycast_dda.h>
 
+#define EXCLUDE_DATA
 
 #ifndef EXCLUDE_DATA
 

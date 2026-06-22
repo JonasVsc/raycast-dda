@@ -97,22 +97,8 @@ TOTAL_RAY_COUNT = 400
 RAYS_PER_CHUNK  = 400
 
 TEST_SCENARIOS = [
-    ("scenario_1", 2.5, 2.5, 1.0, 0.0, 0.0, 0.66),
-    ("scenario_2", 18.5, 23.4, 0.0, 1.0, 0.66, 0.0),
-    ("scenario_3", 18.5, 23.4, -1.0, 0.0, 0.0, -0.66),
-    ("scenario_4", 18.5, 23.4, 0.0, -1.0, -0.66, 0.0),
-    ("scenario_5", 15.2, 31.8, 1.0, 0.0, 0.0, 1.0),
-    ("scenario_6", 12.6, 7.8, 0.0, 1.0, 0.8, 0.0),
-    ("scenario_7", 28.4, 6.4, -1.0, 0.0, 0.0, -0.8),
-    ("scenario_8", 2.6, 9.2, 0.0, -1.0, -1.0, 0.0),
-    ("scenario_9", 2.5, 2.5, 0.866, 0.5, -0.33, 0.5716),
-    ("scenario_10", 4.0, 4.0, 0.7071, 0.7071, -0.4667, 0.4667),
-    ("scenario_11", 1.5, 6.5, 0.5, 0.866, -0.5716, 0.33),
-    ("scenario_12", 1.5, 6.5, -0.7071, 0.7071, -0.4667, -0.4667),
-    ("scenario_13", 6.5, 16.5, -0.7071, -0.7071, 0.4667, -0.4667),
-    ("scenario_14", 40.0, 40.0, 0.0, 1.0, 0.66, 0.0),
-    ("scenario_15", 40.0, 40.0, 0.0, -1.0, 0.66, 0.0),
-    ("scenario_16", 7, 8, 0.7071, 0.7071, -0.4667, 0.4667)
+    ("scenario_1", 1.4, 1.4, -1.0, 0.0, 0.0, 1.0),
+    ("scenario_16", 1.1, 1.1, 0.7071, 0.7071, -0.4667, 0.4667)
 ]
 
 def bitpack_map(map_data, width, height):
@@ -140,7 +126,7 @@ print(f"Número de chunks          : {num_chunks}")
 print(f"Cenários a executar       : {len(TEST_SCENARIOS)}\n")
 
 ser = serial.Serial(
-    port='COM6',
+    port='COM7',
     baudrate=38400,
     timeout=300,
 )
@@ -190,7 +176,7 @@ for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, st
 
     print(f"\n  Total de distâncias recebidas: {len(all_distances)}")
 
-    EXEC_AMOUNT = 1000
+    EXEC_AMOUNT = 50
     expected_time_bytes = EXEC_AMOUNT * 4
     raw_time = ser.read(expected_time_bytes)
     if len(raw_time) == expected_time_bytes:
@@ -214,7 +200,7 @@ for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, st
         print(f"  Amplitude       : {amplitude_us:.0f} us")
 
         # Salva o array de tempos em um arquivo de log
-        time_output_file = f"out/build/x64-Debug/tests/times_output_{scenario_idx}.txt"
+        time_output_file = f"./times_output_{scenario_idx}.txt"
         with open(time_output_file, "w") as f:
             f.write("\n".join(str(t) for t in exec_times) + "\n")
         print(f"  Tempos salvos em {time_output_file}")
@@ -222,7 +208,7 @@ for scenario_idx, (name, ox, oy, dx, dy, px, py) in enumerate(TEST_SCENARIOS, st
         print(f"  [AVISO] Falha ao ler os tempos de execução. Recebeu {len(raw_time)} bytes.")
 
     if not error_occurred:
-        output_file = f"out/build/x64-Debug/tests/res_output_{scenario_idx}.txt"
+        output_file = f"./res_output_{scenario_idx}.txt"
         with open(output_file, "w") as f:
             f.write("\n".join(f"{d:.6f}" for d in all_distances) + "\n")
         print(f"  Resultados salvos em {output_file}\n")

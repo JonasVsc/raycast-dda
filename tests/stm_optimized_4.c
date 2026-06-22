@@ -25,6 +25,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 
+__attribute__((noinline))
 static uint8_t map_get(uint8_t* map, int x, int y, int width)
 {
     int idx = x * width + y;
